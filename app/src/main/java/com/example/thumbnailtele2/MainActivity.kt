@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -71,7 +70,7 @@ class MainActivity : AppCompatActivity() {
 
 //            Log.d("!!!", text.toString())
 //            Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
-//            ivShowThumbNail.setImageResource(R.drawable.ireland)
+            ivShowThumbNail.setImageResource(R.drawable.ireland)
 
 
 
