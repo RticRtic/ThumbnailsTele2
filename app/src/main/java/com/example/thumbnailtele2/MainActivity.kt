@@ -78,8 +78,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun fetchRequest(sUrl: String): RequestInfo? {
-        var requestInfo: RequestInfo? = null
+    private fun fetchRequest(sUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             var result = getRequest(sUrl)
             if (result != null) {
@@ -98,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d(TAG, "fetchRequest: Error: get request returned no respone")
             }
         }
-        return requestInfo
+
 
 
     }
@@ -140,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                             // Get xml element text value.
                             val value = xmlPullParser.nextText()
                             retBuf.append(" = ")
-                            retBuf.append("<h3>${value.length}")
+                            retBuf.append(value)
                             retBuf.append("\r\n\r\n")
 //                            Log.d("PULLPARSER", "ELEMENT VALUE : $value")
                             Log.d("RETBUFFXML", "parseXmlUsePullParser: RETBUFF XML")
