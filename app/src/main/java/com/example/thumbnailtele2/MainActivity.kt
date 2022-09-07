@@ -1,9 +1,7 @@
 package com.example.thumbnailtele2
 
 
-import RequestInfo
 import android.os.Bundle
-import android.os.Message
 import android.text.TextUtils
 import android.util.Log
 import android.widget.Button
@@ -20,7 +18,6 @@ import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
 import java.net.URL
-import java.util.logging.XMLFormatter
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,16 +27,11 @@ class MainActivity : AppCompatActivity() {
     var client: OkHttpClient = OkHttpClient()
 
 
-    val thumbnailUrl = ""
-
-
-    //    var factory = XmlPullParserFactory.newInstance()
-    //    var parser = factory.newPullParser()
-    //    var event = parser.eventType
-
     val url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
-
+    var segmentTemplateValue = ""
+    var newUrlContainsImageTemplate = ""
+    var imageTemplateNumber = "150"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,11 +79,10 @@ class MainActivity : AppCompatActivity() {
             var result = getRequest(sUrl)
             if (result != null) {
 
-
                 try {
                     parseXmlUsePullParser(result)
-                    Log.d(TAG, "fetchRequest: $result")
 
+                    Log.d("IMAGEURL", "IMAGEURL: $newUrlContainsImageTemplate")
 
                 } catch (err: Error) {
                     Log.d(TAG, "fetchRequest: Error when parsin JSON: " + err.localizedMessage)
@@ -109,8 +100,8 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun parseXmlUsePullParser(xmlString: String): String? {
-        val retBuf = StringBuffer()
+    private fun parseXmlUsePullParser(xmlString: String) {
+
         try {
             // Create xml pull parser factory.
             val parserFactory = XmlPullParserFactory.newInstance()
@@ -131,36 +122,27 @@ class MainActivity : AppCompatActivity() {
                 val nodeName = xmlPullParser.name
                 if (!TextUtils.isEmpty(nodeName)) {
                     if (eventType == XmlPullParser.START_TAG) {
-                        Log.d("JANNE", "ELEMENT NODENAME $nodeName")
                         if ("SegmentTemplate".equals(nodeName, ignoreCase = true)
 
                         ) {
-                            retBuf.append(nodeName)
-
                             // Get xml element text value.
-                            val value = xmlPullParser.getAttributeValue(null, "media")
+                            var segmentTemplateMediaValue = xmlPullParser.getAttributeValue(null, "media")
 
-                            retBuf.append(value)
-                            Log.d(PULLPARSER, "ATTRIBUTE VALUE : $value")
+                            segmentTemplateValue = segmentTemplateMediaValue
+
+                            // modify the valuedata with imageTemplateNumber for an imageframe
+                            segmentTemplateMediaValue = "sc-gaFEOw/V0_F$imageTemplateNumber\$.jpg?scale=160x90&d=6000"
+
+                            newUrlContainsImageTemplate = "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/$segmentTemplateMediaValue"
+
+                            Log.d("NEWURL", "ATTRIBUTE VALUE : $newUrlContainsImageTemplate")
                         }
                     }
-//                    else if (eventType == XmlPullParser.END_TAG) {
-//                        val value = xmlPullParser.nextText()
-//                        Log.d(TAG, "parseXmlUsePullParser: $nodeName")
-//                        if ("SegmentTemplate".equals(nodeName, ignoreCase = true)) {
-//                            retBuf.append("************************\r\n\r\n")
-//                            retBuf.append(value)
-//                            Log.d("Segment", "NODENAME : $value ")
-//                        }
-//                    }
                 }
                 eventType = xmlPullParser.next()
             }
         } catch (ex: XmlPullParserException) {
-            retBuf.append(ex.message)
-        } finally {
-            return retBuf.toString()
-
+            Log.d(PULLPARSER, "parseXmlUsePullParser: ERROR")
         }
     }
 
