@@ -26,7 +26,11 @@ import java.util.logging.XMLFormatter
 class MainActivity : AppCompatActivity() {
 
     val TAG = "!!!"
+    val PULLPARSER = "PULLPARSER"
     var client: OkHttpClient = OkHttpClient()
+
+
+    val thumbnailUrl = ""
 
 
     //    var factory = XmlPullParserFactory.newInstance()
@@ -125,30 +129,28 @@ class MainActivity : AppCompatActivity() {
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 // Get xml element node name.
                 val nodeName = xmlPullParser.name
-                Log.d("PULLPARSER", "XMLPULLPARSER NAME : ${xmlPullParser.name} ")
                 if (!TextUtils.isEmpty(nodeName)) {
                     if (eventType == XmlPullParser.START_TAG) {
-                        Log.d("PULLPARSER", "ELEMENT NODENAME $nodeName")
+                        Log.d("JANNE", "ELEMENT NODENAME $nodeName")
                         if ("SegmentTemplate".equals(nodeName, ignoreCase = true)
 
                         ) {
                             retBuf.append(nodeName)
-                            Log.d("PULLPARSER", "RETBUFF : $retBuf")
-
 
                             // Get xml element text value.
-                            val value = xmlPullParser.nextText()
-                            retBuf.append(" = ")
+                            val value = xmlPullParser.getAttributeValue(null, "media")
+
                             retBuf.append(value)
-                            retBuf.append("\r\n\r\n")
-//                            Log.d("PULLPARSER", "ELEMENT VALUE : $value")
-                            Log.d("RETBUFFXML", "parseXmlUsePullParser: RETBUFF XML")
+                            Log.d(PULLPARSER, "ATTRIBUTE VALUE : $value")
                         }
                     }
 //                    else if (eventType == XmlPullParser.END_TAG) {
+//                        val value = xmlPullParser.nextText()
 //                        Log.d(TAG, "parseXmlUsePullParser: $nodeName")
 //                        if ("SegmentTemplate".equals(nodeName, ignoreCase = true)) {
 //                            retBuf.append("************************\r\n\r\n")
+//                            retBuf.append(value)
+//                            Log.d("Segment", "NODENAME : $value ")
 //                        }
 //                    }
                 }
@@ -164,6 +166,10 @@ class MainActivity : AppCompatActivity() {
 
 
 }
+
+
+
+
 
 
 
