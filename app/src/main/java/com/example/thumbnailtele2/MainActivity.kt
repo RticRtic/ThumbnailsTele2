@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     var client: OkHttpClient = OkHttpClient()
 
 
+
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
     var addMutableValueToUrl = ""
@@ -44,12 +45,12 @@ class MainActivity : AppCompatActivity() {
         val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
 
 
+
         btnSendRequestButton.setOnClickListener {
             fetchRequest(url)
 
 
         }
-
 
     }
 
@@ -81,15 +82,17 @@ class MainActivity : AppCompatActivity() {
 
                 try {
 
-                    parseXmlUsePullParser(result)
+                    withContext(Dispatchers.Main) {
+                        parseXmlUsePullParser(result)
 
+                    }
 
                 } catch (err: Error) {
-                    Log.d(TAG, "fetchRequest: Error when parsin JSON: " + err.localizedMessage)
+                    Log.d("TRACER", "fetchRequest: Error when parsin JSON: " + err.localizedMessage)
                 }
 
             } else {
-                Log.d(TAG, "fetchRequest: Error: get request returned no respone")
+                Log.d("TRACER", "fetchRequest: Error: get request returned no respone")
             }
         }
 
@@ -101,9 +104,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun parseXmlUsePullParser(xmlString: String) {
-        val etEnterNumber = findViewById<EditText>(R.id.etEnterRequest)
+        val etEnterRequestNumber = findViewById<EditText>(R.id.etEnterRequest)
         val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
-        addMutableValueToUrl = etEnterNumber.text.toString()
+        addMutableValueToUrl = etEnterRequestNumber.text.toString()
 
         try {
             // Create xml pull parser factory.
@@ -138,9 +141,12 @@ class MainActivity : AppCompatActivity() {
                             finalUrl = removedChar + addMutableValueToUrl + addToEndUrl
                             Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
 
+
                             Picasso.with(this)
                                 .load(finalUrl)
                                 .into(ivShowThumbNail)
+
+
 
 
                         }
@@ -151,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
             }
         } catch (ex: XmlPullParserException) {
-            Log.d(PULLPARSER, "parseXmlUsePullParser: ERROR")
+            Log.d("TRACER", "parseXmlUsePullParser: ERROR")
 
         }
 
