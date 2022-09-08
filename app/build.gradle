@@ -53,7 +53,7 @@ dependencies {
 //    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$arch_version"
     //noinspection GradleDependency
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$arch_version"
-    implementation "com.beust:klaxon:5.5"
+
 
 
 
@@ -61,7 +61,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.1"
     implementation "androidx.activity:activity-ktx:1.5.1"
 
-    implementation "com.beust:klaxon:5.5"
+    //Picasso
+    implementation "com.squareup.picasso:picasso:2.5.2"
 
 
 

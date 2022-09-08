@@ -27,11 +27,12 @@ class MainActivity : AppCompatActivity() {
     var client: OkHttpClient = OkHttpClient()
 
 
-    val url =
+    var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
-    var segmentTemplateValue = ""
     var newUrlContainsImageTemplate = ""
-    var imageTemplateNumber = "150"
+    var imageTemplateNumber = "150.jpg?scale=160x90&d=6000"
+    var addMutableValueToUrl = "240"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,15 +40,20 @@ class MainActivity : AppCompatActivity() {
 
         val etRequestText = findViewById<EditText>(R.id.etEnterRequest)
         val btnSendRequestButton = findViewById<Button>(R.id.btnSendRequest)
-        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
+//        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
 
 
 
         btnSendRequestButton.setOnClickListener {
             fetchRequest(url)
+            Log.d("BUTTON", "onCreate: $newUrlContainsImageTemplate ")
+//            Picasso.with(this)
+//                .load(newUrlContainsImageTemplate)
+//                .into(ivShowThumbNail)
 
 
         }
+
 
     }
 
@@ -80,9 +86,9 @@ class MainActivity : AppCompatActivity() {
             if (result != null) {
 
                 try {
+
                     parseXmlUsePullParser(result)
 
-                    Log.d("IMAGEURL", "IMAGEURL: $newUrlContainsImageTemplate")
 
                 } catch (err: Error) {
                     Log.d(TAG, "fetchRequest: Error when parsin JSON: " + err.localizedMessage)
@@ -116,6 +122,7 @@ class MainActivity : AppCompatActivity() {
             xmlPullParser.setInput(xmlStringReader)
 
             // Get event type during xml parse.
+            val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
             var eventType = xmlPullParser.eventType
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 // Get xml element node name.
@@ -125,29 +132,33 @@ class MainActivity : AppCompatActivity() {
                         if ("SegmentTemplate".equals(nodeName, ignoreCase = true)
 
                         ) {
-                            // Get xml element text value.
-                            var segmentTemplateMediaValue = xmlPullParser.getAttributeValue(null, "media")
 
-                            segmentTemplateValue = segmentTemplateMediaValue
 
-                            // modify the valuedata with imageTemplateNumber for an imageframe
-                            segmentTemplateMediaValue = "sc-gaFEOw/V0_F$imageTemplateNumber\$.jpg?scale=160x90&d=6000"
+                            // Get xml element text value. And modify it
+                            var mediaValue = xmlPullParser.getAttributeValue(null, "media")
+                            var changedURl = url.substring(0, url.indexOf("manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"))
+                            var newUrl = changedURl + mediaValue
+                            var remove = newUrl.substring(0, newUrl.indexOf("$"))
+                            val addToEndUrl = ".jpg?scale=160x90&d=6000"
+                            var finalUrl = remove + addMutableValueToUrl + addToEndUrl
 
-                            newUrlContainsImageTemplate = "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/$segmentTemplateMediaValue"
-
-                            Log.d("NEWURL", "ATTRIBUTE VALUE : $newUrlContainsImageTemplate")
+                            Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
                         }
                     }
                 }
                 eventType = xmlPullParser.next()
+
             }
         } catch (ex: XmlPullParserException) {
             Log.d(PULLPARSER, "parseXmlUsePullParser: ERROR")
+
         }
+
     }
 
-
 }
+
+
 
 
 
