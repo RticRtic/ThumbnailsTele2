@@ -9,8 +9,10 @@ import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.xmlpull.v1.XmlPullParser
@@ -29,27 +31,21 @@ class MainActivity : AppCompatActivity() {
 
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
-    var newUrlContainsImageTemplate = ""
-    var imageTemplateNumber = "150.jpg?scale=160x90&d=6000"
-    var addMutableValueToUrl = "240"
+    var addMutableValueToUrl = ""
+    var finalUrl = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val etRequestText = findViewById<EditText>(R.id.etEnterRequest)
-        val btnSendRequestButton = findViewById<Button>(R.id.btnSendRequest)
-//        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
 
+        val btnSendRequestButton = findViewById<Button>(R.id.btnSendRequest)
+        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
 
 
         btnSendRequestButton.setOnClickListener {
             fetchRequest(url)
-            Log.d("BUTTON", "onCreate: $newUrlContainsImageTemplate ")
-//            Picasso.with(this)
-//                .load(newUrlContainsImageTemplate)
-//                .into(ivShowThumbNail)
 
 
         }
@@ -78,11 +74,9 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
     private fun fetchRequest(sUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            var result = getRequest(sUrl)
+            val result = getRequest(sUrl)
             if (result != null) {
 
                 try {
@@ -107,6 +101,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun parseXmlUsePullParser(xmlString: String) {
+        val etEnterNumber = findViewById<EditText>(R.id.etEnterRequest)
+        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
+        addMutableValueToUrl = etEnterNumber.text.toString()
 
         try {
             // Create xml pull parser factory.
@@ -122,7 +119,6 @@ class MainActivity : AppCompatActivity() {
             xmlPullParser.setInput(xmlStringReader)
 
             // Get event type during xml parse.
-            val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
             var eventType = xmlPullParser.eventType
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 // Get xml element node name.
@@ -133,17 +129,22 @@ class MainActivity : AppCompatActivity() {
 
                         ) {
 
-
                             // Get xml element text value. And modify it
-                            var mediaValue = xmlPullParser.getAttributeValue(null, "media")
-                            var changedURl = url.substring(0, url.indexOf("manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"))
-                            var newUrl = changedURl + mediaValue
-                            var remove = newUrl.substring(0, newUrl.indexOf("$"))
+                            val mediaValue = xmlPullParser.getAttributeValue(null, "media")
+                            val changedURl = url.substring(0, url.indexOf("manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"))
+                            val newUrl = changedURl + mediaValue
+                            val removedChar = newUrl.substring(0, newUrl.indexOf("$"))
                             val addToEndUrl = ".jpg?scale=160x90&d=6000"
-                            var finalUrl = remove + addMutableValueToUrl + addToEndUrl
-
+                            finalUrl = removedChar + addMutableValueToUrl + addToEndUrl
                             Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
+
+                            Picasso.with(this)
+                                .load(finalUrl)
+                                .into(ivShowThumbNail)
+
+
                         }
+
                     }
                 }
                 eventType = xmlPullParser.next()
@@ -157,6 +158,8 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+
 
 
 
