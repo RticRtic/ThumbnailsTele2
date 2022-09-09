@@ -2,10 +2,12 @@ package com.example.thumbnailtele2
 
 
 import android.os.Bundle
-import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
-import android.widget.*
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.squareup.picasso.Picasso
@@ -21,56 +23,59 @@ import java.io.StringReader
 import java.net.URL
 
 
+
 class MainActivity : AppCompatActivity() {
 
     val TAG = "!!!"
     val PULLPARSER = "PULLPARSER"
+
+    //Xml
     var client: OkHttpClient = OkHttpClient()
-
-
-
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
     var addMutableValueToUrl = 0
     var finalUrl = ""
 
+    //Seekbar
     val seekBarMinValue = 0
     val seekBarMaxValue = 3600
     val seekBarStep = 6
-    val currentMovieImages = 700
+
+
+    var progressValue = 0
+    var sizeInDp = 10
+    var scale = 20
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-        val btnSendRequestButton = findViewById<Button>(R.id.btnSendRequest)
         val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
+        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
+        val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
+
 
         sbSeekBar.progress = seekBarMinValue
-//        sbSeekBar.incrementProgressBy(seekBarStep)
         sbSeekBar.max = seekBarMaxValue
 
 
 
 
-        btnSendRequestButton?.setOnClickListener {
 
-
-
-        }
 
        sbSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
            override fun onProgressChanged(seekbar: SeekBar, progress: Int, fromUser: Boolean) {
                fetchRequest(url)
+               var moveThumbNail = resources.displayMetrics.density
+               var progressPadding = addMutableValueToUrl
+               var paddingLeft = progressPadding * moveThumbNail.toInt()
 
                if(progress >= seekBarMinValue && progress <= seekBarMaxValue){
                    addMutableValueToUrl = progress / seekBarStep
+                   relativeLayout.setPadding(paddingLeft,0,0,0)
                }
-
-
-
 
                Log.d("PROGRESS", "addMutableValueToUrl: $addMutableValueToUrl ")
                Log.d("PROGRESS", "Progress: $progress")
@@ -83,7 +88,9 @@ class MainActivity : AppCompatActivity() {
            }
 
            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//               Toast.makeText(this@MainActivity, "Progress is: " + seekBar?.progress + "%", Toast.LENGTH_SHORT).show()
+               Log.d("SEEKBAR", "onStopTrackingTouch: ${sbSeekBar.progress}")
+
+
            }
 
 
@@ -139,12 +146,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
     private fun parseXmlUsePullParser(xmlString: String) {
-        val etEnterRequestNumber = findViewById<EditText>(R.id.etEnterRequest)
+
         val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
-//        addMutableValueToUrl = etEnterRequestNumber.text.toString()
+
 
         try {
             // Create xml pull parser factory.
@@ -200,6 +205,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+
 
 }
 
