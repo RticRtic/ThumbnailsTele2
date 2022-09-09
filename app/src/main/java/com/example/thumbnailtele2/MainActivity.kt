@@ -2,11 +2,10 @@ package com.example.thumbnailtele2
 
 
 import android.os.Bundle
+import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.squareup.picasso.Picasso
@@ -32,8 +31,13 @@ class MainActivity : AppCompatActivity() {
 
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
-    var addMutableValueToUrl = ""
+    var addMutableValueToUrl = 0
     var finalUrl = ""
+
+    val seekBarMinValue = 0
+    val seekBarMaxValue = 3600
+    val seekBarStep = 6
+    val currentMovieImages = 700
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,15 +46,48 @@ class MainActivity : AppCompatActivity() {
 
 
         val btnSendRequestButton = findViewById<Button>(R.id.btnSendRequest)
-        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
+        val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
+
+        sbSeekBar.progress = seekBarMinValue
+//        sbSeekBar.incrementProgressBy(seekBarStep)
+        sbSeekBar.max = seekBarMaxValue
 
 
 
-        btnSendRequestButton.setOnClickListener {
-            fetchRequest(url)
+
+        btnSendRequestButton?.setOnClickListener {
+
 
 
         }
+
+       sbSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+           override fun onProgressChanged(seekbar: SeekBar, progress: Int, fromUser: Boolean) {
+               fetchRequest(url)
+
+               if(progress >= seekBarMinValue && progress <= seekBarMaxValue){
+                   addMutableValueToUrl = progress / seekBarStep
+               }
+
+
+
+
+               Log.d("PROGRESS", "addMutableValueToUrl: $addMutableValueToUrl ")
+               Log.d("PROGRESS", "Progress: $progress")
+
+
+           }
+
+           override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+           }
+
+           override fun onStopTrackingTouch(seekBar: SeekBar?) {
+//               Toast.makeText(this@MainActivity, "Progress is: " + seekBar?.progress + "%", Toast.LENGTH_SHORT).show()
+           }
+
+
+       })
 
     }
 
@@ -85,6 +122,7 @@ class MainActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         parseXmlUsePullParser(result)
 
+
                     }
 
                 } catch (err: Error) {
@@ -106,7 +144,7 @@ class MainActivity : AppCompatActivity() {
     private fun parseXmlUsePullParser(xmlString: String) {
         val etEnterRequestNumber = findViewById<EditText>(R.id.etEnterRequest)
         val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
-        addMutableValueToUrl = etEnterRequestNumber.text.toString()
+//        addMutableValueToUrl = etEnterRequestNumber.text.toString()
 
         try {
             // Create xml pull parser factory.
@@ -139,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                             val removedChar = newUrl.substring(0, newUrl.indexOf("$"))
                             val addToEndUrl = ".jpg?scale=160x90&d=6000"
                             finalUrl = removedChar + addMutableValueToUrl + addToEndUrl
-                            Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
+//                            Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
 
 
                             Picasso.with(this)
