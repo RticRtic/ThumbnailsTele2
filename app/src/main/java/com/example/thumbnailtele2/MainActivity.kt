@@ -168,11 +168,11 @@ class MainActivity : AppCompatActivity() {
                             val addToEndUrl = ".jpg?scale=160x90&d=6000"
                             finalUrl = changedUrlWithRemovedChar + addMutableValueToUrl + addToEndUrl
 
+
                             //show image
                             Picasso.with(this)
                                 .load(finalUrl)
                                 .into(ivShowThumbNail)
-
 
 
                             // Get xml mediaPresentationDuration element text value. And modify it
