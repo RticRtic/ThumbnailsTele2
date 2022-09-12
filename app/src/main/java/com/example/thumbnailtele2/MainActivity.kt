@@ -4,10 +4,7 @@ package com.example.thumbnailtele2
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
-import android.widget.SeekBar
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.squareup.picasso.Picasso
@@ -36,15 +33,12 @@ class MainActivity : AppCompatActivity() {
     var addMutableValueToUrl = 0
     var finalUrl = ""
 
+
     //Seekbar
     val seekBarMinValue = 0
-    val seekBarMaxValue = 3600
+    var finalMovieDuration = 0
+//    var seekBarMaxValue = 0
     val seekBarStep = 6
-
-
-    var progressValue = 0
-    var sizeInDp = 10
-    var scale = 20
 
 
 
@@ -53,48 +47,55 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
-        val ivShowThumbNail = findViewById<ImageView>(R.id.ivThumbnail)
+        val etEnterUrl = findViewById<EditText>(R.id.etUrlRequest)
+        val btnGetMovie = findViewById<Button>(R.id.btnGetRequest)
         val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
 
 
         sbSeekBar.progress = seekBarMinValue
-        sbSeekBar.max = seekBarMaxValue
+        sbSeekBar.max = finalMovieDuration
+
+
+        btnGetMovie?.setOnClickListener {
+            fetchRequest(url)
+
+
+            Log.d("BUTTON", "BUTTON: ${finalMovieDuration} ")
+        }
+
+
+        sbSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekbar: SeekBar, progress: Int, fromUser: Boolean) {
+                fetchRequest(url)
+                val moveThumbNail = resources.displayMetrics.density
+                val progressPadding = addMutableValueToUrl
+                val paddingLeft = progressPadding * moveThumbNail.toInt()
+                Log.d("paddingLeft", "paddingLeft: $paddingLeft ")
+
+                if(progress in seekBarMinValue..finalMovieDuration){
+                    addMutableValueToUrl = progress / seekBarStep
+//                   relativeLayout.setPadding(paddingLeft,0,0,0)
+                }
+
+                Log.d("paddingLeft", "addMutableValueToUrl: $addMutableValueToUrl ")
+                Log.d("paddingLeft", "moveThumbNail: $moveThumbNail ")
 
 
 
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                Log.d("SEEKBAR", "onStopTrackingTouch: ${sbSeekBar.progress}")
 
 
-
-       sbSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
-           override fun onProgressChanged(seekbar: SeekBar, progress: Int, fromUser: Boolean) {
-               fetchRequest(url)
-               var moveThumbNail = resources.displayMetrics.density
-               var progressPadding = addMutableValueToUrl
-               var paddingLeft = progressPadding * moveThumbNail.toInt()
-
-               if(progress >= seekBarMinValue && progress <= seekBarMaxValue){
-                   addMutableValueToUrl = progress / seekBarStep
-                   relativeLayout.setPadding(paddingLeft,0,0,0)
-               }
-
-               Log.d("PROGRESS", "addMutableValueToUrl: $addMutableValueToUrl ")
-               Log.d("PROGRESS", "Progress: $progress")
+            }
 
 
-           }
-
-           override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
-           }
-
-           override fun onStopTrackingTouch(seekBar: SeekBar?) {
-               Log.d("SEEKBAR", "onStopTrackingTouch: ${sbSeekBar.progress}")
-
-
-           }
-
-
-       })
+        })
 
     }
 
@@ -171,24 +172,32 @@ class MainActivity : AppCompatActivity() {
                 val nodeName = xmlPullParser.name
                 if (!TextUtils.isEmpty(nodeName)) {
                     if (eventType == XmlPullParser.START_TAG) {
-                        if ("SegmentTemplate".equals(nodeName, ignoreCase = true)
+                        if ("SegmentTemplate".equals(nodeName, ignoreCase = true)) {
 
-                        ) {
-
-                            // Get xml element text value. And modify it
+                            // Get xml SegmentTemplate element text value. And modify it
                             val mediaValue = xmlPullParser.getAttributeValue(null, "media")
                             val changedURl = url.substring(0, url.indexOf("manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"))
                             val newUrl = changedURl + mediaValue
-                            val removedChar = newUrl.substring(0, newUrl.indexOf("$"))
+                            val changedUrlWithRemovedChar = newUrl.substring(0, newUrl.indexOf("$"))
                             val addToEndUrl = ".jpg?scale=160x90&d=6000"
-                            finalUrl = removedChar + addMutableValueToUrl + addToEndUrl
+                            finalUrl = changedUrlWithRemovedChar + addMutableValueToUrl + addToEndUrl
 //                            Log.d("SUBSTRING", "parseXmlUsePullParser: $finalUrl ")
 
 
+                            //show image
                             Picasso.with(this)
                                 .load(finalUrl)
                                 .into(ivShowThumbNail)
 
+
+
+                        // Get xml mediaPresentationDuration element text value. And modify it
+                        } else if ("MPD".equals(nodeName, ignoreCase = true)) {
+                            val movieDuration =
+                                xmlPullParser.getAttributeValue(null, "mediaPresentationDuration")
+                            val changedMovieDurationValueWithFirstLetters = movieDuration.drop(2)
+                            val changedMovieDurationValueWithLastLetter = changedMovieDurationValueWithFirstLetters.dropLast(1)
+                            finalMovieDuration = changedMovieDurationValueWithLastLetter.toInt()
 
 
 

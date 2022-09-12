@@ -19,6 +19,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <EditText
+            android:id="@+id/etUrlRequest"
+            android:text="Enter Url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btnGetRequest"
+            android:text="Get Movie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
 
         <RelativeLayout
             android:id="@+id/relativeLayout"
@@ -43,7 +55,10 @@
             android:layout_height="match_parent" />
 
 
+
+
     </LinearLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
