@@ -6,6 +6,8 @@ import android.text.TextUtils
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
@@ -18,28 +20,24 @@ import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
 import java.net.URL
-import java.time.Duration
 
 
 class MainActivity : AppCompatActivity() {
+    // ViewModel
+    lateinit var viewModel: MainActivityViewModel
 
     val TAG = "!!!"
-    val PULLPARSER = "PULLPARSER"
 
-    //Xml
-    var client: OkHttpClient = OkHttpClient()
+    //    var client: OkHttpClient = OkHttpClient()
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
     //   https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/0419d03f-d48c-4b0e-8996-bd8d24fdd7b6/manifest?chSessionId=9d6f1882-4a90-499f-aaf5-cb7aab2e17ed
-    var addMutableValueToUrl = 0
-    var finalUrl = ""
+
 
 
     //Seekbar
     val seekBarMinValue = 0
-    var finalMovieDuration = 0
     val seekBarStep = 6
-
 
 
 
@@ -47,25 +45,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-        val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
+        viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
+//        val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
 
         val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
         sbSeekBar.progress = seekBarMinValue
 
-
-
         sbSeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             override fun onProgressChanged(seekbar: SeekBar, progress: Int, fromUser: Boolean) {
                 fetchRequest(url)
-                val moveThumbNail = resources.displayMetrics.density
-                val progressPadding = addMutableValueToUrl
-                val paddingLeft = progressPadding * moveThumbNail.toInt()
-                Log.d("paddingLeft", "paddingLeft: $paddingLeft ")
+//                val moveThumbNail = resources.displayMetrics.density
+//                val progressPadding = addMutableValueToUrl
+//                val paddingLeft = progressPadding * moveThumbNail.toInt()
+//                Log.d("paddingLeft", "paddingLeft: $paddingLeft ")
 
-                if(progress in seekBarMinValue..finalMovieDuration){
-                    addMutableValueToUrl = progress / seekBarStep
-                    Log.d("finalmMovieDuration", "finalmMovieDuration $finalMovieDuration")
+                if(progress in seekBarMinValue..viewModel.finalMovieDuration){
+                    viewModel.addMutableValueToUrl = progress / seekBarStep
 //                    relativeLayout.setPadding(paddingLeft,0,0,0)
 
                 }
@@ -87,28 +82,28 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+//    private fun getRequest(sUrl: String): String? {
+//        var result: String? = null
+//
+//
+//        try {
+//            val url = URL(sUrl)
+//            val request = Request.Builder().url(url).build()
+//            val response = client.newCall(request).execute()
+//            result = response.body?.string()
+//
+//
+//        } catch (err: Error) {
+//            Log.d(TAG, "getRequest: Error to get request : " + err.localizedMessage)
+//        }
+//
+//        return result
+//    }
 
-    private fun getRequest(sUrl: String): String? {
-        var result: String? = null
 
-
-        try {
-            val url = URL(sUrl)
-            val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
-            result = response.body?.string()
-
-
-        } catch (err: Error) {
-            Log.d(TAG, "getRequest: Error to get request : " + err.localizedMessage)
-        }
-
-        return result
-    }
-
-    private fun fetchRequest(sUrl: String) {
+    fun fetchRequest(sUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val result = getRequest(sUrl)
+            val result = viewModel.getRequest(sUrl)
             if (result != null) {
 
                 try {
@@ -131,7 +126,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
 
     private fun parseXmlUsePullParser(xmlString: String) {
 
@@ -160,29 +154,20 @@ class MainActivity : AppCompatActivity() {
                     if (eventType == XmlPullParser.START_TAG) {
                         if ("SegmentTemplate".equals(nodeName, ignoreCase = true)) {
 
-                            // Get xml SegmentTemplate element text value. And modify it
-                            val mediaValue = xmlPullParser.getAttributeValue(null, "media")
-                            val changedURl = url.substring(0, url.indexOf("manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"))
-                            val newUrl = changedURl + mediaValue
-                            val changedUrlWithRemovedChar = newUrl.substring(0, newUrl.indexOf("$"))
-                            val addToEndUrl = ".jpg?scale=160x90&d=6000"
-                            finalUrl = changedUrlWithRemovedChar + addMutableValueToUrl + addToEndUrl
-
+                            //Get xml SegmentTemplate element text value. And modify it
+                            viewModel.thumbnailUrlFromMediaTemplate(xmlPullParser,url)
 
                             //show image
                             Picasso.with(this)
-                                .load(finalUrl)
+                                .load(viewModel.finalUrl)
                                 .into(ivShowThumbNail)
 
 
                             // Get xml mediaPresentationDuration element text value. And modify it
                         } else if ("MPD".equals(nodeName, ignoreCase = true)) {
                             val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
-                            val movieDuration = xmlPullParser.getAttributeValue(null, "mediaPresentationDuration")
-                            val changedMovieDurationValueWithFirstLetters = movieDuration.drop(2)
-                            val changedMovieDurationValueWithLastLetter = changedMovieDurationValueWithFirstLetters.dropLast(1)
-                            finalMovieDuration = changedMovieDurationValueWithLastLetter.toInt()
-                            sbSeekBar.max = finalMovieDuration
+                            viewModel.movieDuration(xmlPullParser)
+                            sbSeekBar.max = viewModel.finalMovieDuration
 
                         }
                     }
@@ -197,7 +182,13 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
 }
+
+
+
+
+
 
 
 
