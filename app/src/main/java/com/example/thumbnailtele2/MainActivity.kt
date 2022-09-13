@@ -27,10 +27,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var viewModel: MainActivityViewModel
 
     val TAG = "!!!"
-    val PULLPARSER = "PULLPARSER"
 
-    //Xml
-    var client: OkHttpClient = OkHttpClient()
+    //    var client: OkHttpClient = OkHttpClient()
     var url =
         "https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/a48ea5c9-0d09-419d-9bbf-4636ca4968da/manifest?chSessionId=5d8b6648-97c1-44c3-b182-5ea4d025f9d7"
     //   https://vcdn.tv.comhem.se/vod/dash/cenc/HD/25fps/high/2ch/2nd/0419d03f-d48c-4b0e-8996-bd8d24fdd7b6/manifest?chSessionId=9d6f1882-4a90-499f-aaf5-cb7aab2e17ed
@@ -48,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
-        val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
+//        val relativeLayout = findViewById<RelativeLayout>(R.id.relativeLayout)
 
         val sbSeekBar = findViewById<SeekBar>(R.id.sbSeekBar)
         sbSeekBar.progress = seekBarMinValue
@@ -63,7 +61,6 @@ class MainActivity : AppCompatActivity() {
 
                 if(progress in seekBarMinValue..viewModel.finalMovieDuration){
                     viewModel.addMutableValueToUrl = progress / seekBarStep
-                    Log.d("finalmMovieDuration", "finalmMovieDuration ${viewModel.finalMovieDuration}")
 //                    relativeLayout.setPadding(paddingLeft,0,0,0)
 
                 }
@@ -85,28 +82,28 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+//    private fun getRequest(sUrl: String): String? {
+//        var result: String? = null
+//
+//
+//        try {
+//            val url = URL(sUrl)
+//            val request = Request.Builder().url(url).build()
+//            val response = client.newCall(request).execute()
+//            result = response.body?.string()
+//
+//
+//        } catch (err: Error) {
+//            Log.d(TAG, "getRequest: Error to get request : " + err.localizedMessage)
+//        }
+//
+//        return result
+//    }
 
-    private fun getRequest(sUrl: String): String? {
-        var result: String? = null
 
-
-        try {
-            val url = URL(sUrl)
-            val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
-            result = response.body?.string()
-
-
-        } catch (err: Error) {
-            Log.d(TAG, "getRequest: Error to get request : " + err.localizedMessage)
-        }
-
-        return result
-    }
-
-    private fun fetchRequest(sUrl: String) {
+    fun fetchRequest(sUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val result = getRequest(sUrl)
+            val result = viewModel.getRequest(sUrl)
             if (result != null) {
 
                 try {

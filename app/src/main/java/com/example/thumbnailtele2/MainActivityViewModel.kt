@@ -2,12 +2,20 @@ package com.example.thumbnailtele2
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.xmlpull.v1.XmlPullParser
+import java.net.URL
 
 class MainActivityViewModel : ViewModel() {
+    val TAG = "!!!"
+
     var finalUrl = ""
     var addMutableValueToUrl = 0
     var finalMovieDuration = 0
+
+    //Xml
+    var client: OkHttpClient = OkHttpClient()
 
 
 
@@ -27,5 +35,25 @@ class MainActivityViewModel : ViewModel() {
         finalMovieDuration = changedMovieDurationValueWithLastLetter.toInt()
         Log.d("movieDuration", "movieDuration: $finalMovieDuration")
     }
+
+
+    fun getRequest(sUrl: String): String? {
+        var result: String? = null
+
+        try {
+            val url = URL(sUrl)
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            result = response.body?.string()
+
+
+        } catch (err: Error) {
+            Log.d(TAG, "getRequest: Error to get request : " + err.localizedMessage)
+        }
+
+        return result
+    }
+
+
 
 }
